@@ -1,0 +1,475 @@
+/* 
+ * File:   main.cpp
+ * Author: talbj6014
+ *
+ * Created on March 30, 2016, 2:03 PM
+ */
+
+#include <cstdlib>
+#include <iostream>
+#include <windows.h>
+
+//Colour coding  
+#define BLUE 1
+#define GREEN 2
+#define CYAN 3
+#define RED 4
+#define PURPLE 5
+#define DARK_YELLOW 6
+#define WHITE 7
+#define GREY 8
+#define LIGHT_BLUE 9
+#define LIGHT_GREEN 10
+#define LIGHT_CYAN 11
+#define LIGHT_RED 12
+#define PINK 13
+#define YELLOW 14
+#define LIGHT_WHITE 15
+
+using namespace std;
+
+/*
+ * 
+ */
+char getKey();
+void boardPosition(int space);
+void setColour(int colour);
+void updatePosition(int x, int y);
+void clear();
+void wait(int time);
+void turnOne(int board[]);
+void turnTwo(int board[]);
+void printMap();
+bool p1Win(int board[]);
+bool p2Win(int board[]);
+bool stale(int board[]);
+
+int main(int argc, char** argv) {
+    int board[9] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
+    printMap();
+    while(!p1Win(board) and !p2Win(board) and !stale(board)){
+        turnOne();
+        turnTwo();
+    }
+    cout << endl;
+    return 0;
+}
+
+void setColour(int colour){
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), colour);
+}
+
+void updatePosition(int x, int y){
+    COORD position;
+    position.X = x;
+    position.Y = y;
+    SetConsoleCursorPosition(GetStdHandle( STD_OUTPUT_HANDLE ),position);
+}
+
+void clear(){
+    system("cls");
+}
+
+void wait(int time){
+    Sleep(time);
+}
+
+void turnOne(int board[]){
+    int space = 1;
+    bool turnNotOver = true;
+    bool open;
+    char key;
+    updatePosition(0,10);
+    setColour(WHITE);
+    cout << "Player One's turn.";
+    while(turnNotOver){
+        boardPosition(space);
+        if(board[space-1] == space){
+            setColour(GREEN);
+            cout << "X";
+            open = true;
+        }
+        else{
+            setColour(RED);
+            open = false;
+        }
+        if(getKey() == 'E'){
+            if(open){
+                turnNotOver = false;
+                boardPosition(space);
+                setColour(PINK);
+                cout << "X";
+                board[space-1] = 2;
+            }
+            else{
+                updatePosition(0,10);
+                cout << "That spot is unavalible!";
+            }
+        }
+        if(getKey() == 'd'){
+            if(space == 3 or space == 6 or space == 9){
+                space = space - 2;
+            }
+            else{
+                space++;
+            }
+        }
+        else if(getKey() == 'a'){
+            if(space == 1 or space == 4 or space == 7){
+                space = space + 2;
+            }
+            else{
+                space--;
+            }
+        }
+        else if(getKey() == 'w'){
+            if(space == 1 or space == 2 or space == 3){
+                space = space + 6;
+            }
+            else{
+                space = space - 3;
+            }
+        }
+        else if(getKey() == 's'){
+            if(space == 7 or space == 8 or space == 9){
+                space = space - 6;
+            }
+            else{
+                space = space + 3;
+            }
+        }
+    }
+}
+
+void turnTwo(int board[]){
+    int space = 1;
+    bool turnNotOver = true;
+    bool open;
+    char key;
+    updatePosition(0,10);
+    setColour(WHITE);
+    cout << "Player Two's turn.";
+    while(turnNotOver){
+        boardPosition(space);
+        if(board[space-1] == space){
+            setColour(GREEN);
+            cout << "O";
+            open = true;
+        }
+        else{
+            setColour(RED);
+            open = false;
+        }
+        if(getKey() == 'E'){
+            if(open){
+                turnNotOver = false;
+                boardPosition(space);
+                setColour(LIGHT_GREEN);
+                cout << "O";
+                board[space-1] = 3;
+            }
+            else{
+                updatePosition(0,10);
+                cout << "That spot is unavalible!";
+            }
+        }
+        if(getKey() == 'd'){
+            if(space == 3 or space == 6 or space == 9){
+                space = space - 2;
+            }
+            else{
+                space++;
+            }
+        }
+        else if(getKey() == 'a'){
+            if(space == 1 or space == 4 or space == 7){
+                space = space + 2;
+            }
+            else{
+                space--;
+            }
+        }
+        else if(getKey() == 'w'){
+            if(space == 1 or space == 2 or space == 3){
+                space = space + 6;
+            }
+            else{
+                space = space - 3;
+            }
+        }
+        else if(getKey() == 's'){
+            if(space == 7 or space == 8 or space == 9){
+                space = space - 6;
+            }
+            else{
+                space = space + 3;
+            }
+        }
+    }
+}
+void printMap(){
+    updatePosition(0, 0);
+    setColour(LIGHT_BLUE);
+    cout << "   |   |   " << endl <<
+            "   |   |   " << endl <<
+            "___|___|___" << endl <<
+            "   |   |   " << endl <<
+            "   |   |   " << endl <<
+            "___|___|___" << endl <<
+            "   |   |   " << endl <<
+            "   |   |   " << endl <<
+            "   |   |   ";
+}
+
+char getKey(){
+    if(GetAsyncKeyState(0x30)){
+        return '0';
+    }
+    if(GetAsyncKeyState(0x31)){
+        return '1';
+    }
+    if(GetAsyncKeyState(0x32)){
+        return '2';
+    }
+    if(GetAsyncKeyState(0x33)){
+        return '3';
+    }
+    if(GetAsyncKeyState(0x34)){
+        return '4';
+    }
+    if(GetAsyncKeyState(0x35)){
+        return '5';
+    }
+    if(GetAsyncKeyState(0x36)){
+        return '6';
+    }
+    if(GetAsyncKeyState(0x37)){
+        return '7';
+    }
+    if(GetAsyncKeyState(0x38)){
+        return '8';
+    }
+    if(GetAsyncKeyState(0x39)){
+        return '9';
+    }
+    if(GetAsyncKeyState(0x41)){
+        return 'a';
+    }
+    if(GetAsyncKeyState(0x42)){
+        return 'b';
+    }
+    if(GetAsyncKeyState(0x43)){
+        return 'c';
+    }
+    if(GetAsyncKeyState(0x44)){
+        return 'd';
+    }
+    if(GetAsyncKeyState(0x45)){
+        return 'e';
+    }
+    if(GetAsyncKeyState(0x46)){
+        return 'f';
+    }
+    if(GetAsyncKeyState(0x47)){
+        return 'g';
+    }
+    if(GetAsyncKeyState(0x48)){
+        return 'h';
+    }
+    if(GetAsyncKeyState(0x49)){
+        return 'i';
+    }
+    if(GetAsyncKeyState(0x4A)){
+        return 'j';
+    }
+    if(GetAsyncKeyState(0x4B)){
+        return 'k';
+    }
+    if(GetAsyncKeyState(0x4C)){
+        return 'l';
+    }
+    if(GetAsyncKeyState(0x4D)){
+        return 'm';
+    }
+    if(GetAsyncKeyState(0x4E)){
+        return 'n';
+    }
+    if(GetAsyncKeyState(0x4F)){
+        return 'o';
+    }
+    if(GetAsyncKeyState(0x50)){
+        return 'p';
+    }
+    if(GetAsyncKeyState(0x51)){
+        return 'q';
+    }
+    if(GetAsyncKeyState(0x52)){
+        return 'r';
+    }
+    if(GetAsyncKeyState(0x53)){
+        return 's';
+    }
+    if(GetAsyncKeyState(0x54)){
+        return 't';
+    }
+    if(GetAsyncKeyState(0x55)){
+        return 'u';
+    }
+    if(GetAsyncKeyState(0x56)){
+        return 'v';
+    }
+    if(GetAsyncKeyState(0x57)){
+        return 'w';
+    }
+    if(GetAsyncKeyState(0x58)){
+        return 'x';
+    }
+    if(GetAsyncKeyState(0x59)){
+        return 'y';
+    }
+    if(GetAsyncKeyState(0x5A)){
+        return 'z';
+    }
+    if(GetAsyncKeyState(0x5A)){
+        return 'z';
+    }
+}
+
+void boardPosition(int space){
+    if(space == 1){
+        updatePositon(2,2);
+    }
+    else if(space == 2){
+        updatePosition(6,2);
+    }
+    else if(space == 3){
+        updatePosition(10,2);
+    }
+    else if(space == 4){
+        updatePosition(2,5);
+    }
+    else if(space == 5){
+        updatePosition(6,5);
+    }
+    else if(space == 6){
+        updatePosition(10,5);
+    }
+    else if(space == 7){
+        updatePosition(2,8);
+    }
+    else if(space == 8){
+        updatePosition(6,8);
+    }
+    else if(space == 9){
+        updatePosition(10,8);
+    }
+}
+
+
+bool p1Win(int board[]){
+    if(board[0] == 2; and board[1] == 2; and board[2] == 2;){
+        setPosition(0,10);
+        setColour(WHITE);
+        cout << "Player one wins!";
+        return true;
+    }
+    else if(board[3] == 2; and board[4] == 2; and board[5] == 2;){
+        setPosition(0,10);
+        setColour(WHITE);
+        cout << "Player one wins!";
+        return true;
+    }
+    else if(board[6] == 2; and board[7] == 2; and board[8] == 2;){
+        setPosition(0,10);
+        setColour(WHITE);
+        cout << "Player one wins!";
+        return true;
+    }
+    else if(board[0] == 2; and board[3] == 2; and board[6] == 2;){
+        setPosition(0,10);
+        setColour(WHITE);
+        cout << "Player one wins!";
+        return true;
+    }
+    else if(board[1] == 2; and board[4] == 2; and board[7] == 2;){
+        setPosition(0,10);
+        setColour(WHITE);
+        cout << "Player one wins!";
+        return true;
+    }
+    else if(board[2] == 2; and board[5] == 2; and board[8] == 2;){
+        setPosition(0,10);
+        setColour(WHITE);
+        cout << "Player one wins!";
+        return true;
+    }
+    else if(board[0] == 2; and board[4] == 2; and board[8] == 2;){
+        setPosition(0,10);
+        setColour(WHITE);
+        cout << "Player one wins!";
+        return true;
+    }
+    else if(board[2] == 2; and board[4] == 2; and board[6] == 2;){
+        setPosition(0,10);
+        setColour(WHITE);
+        cout << "Player one wins!";
+        return true;
+    }
+}
+
+bool p2Win(int board[]){
+    if(board[0] == 3; and board[1] == 3; and board[2] == 3;){
+        setPosition(0,10);
+        setColour(WHITE);
+        cout << "Player two wins!";
+        return true;
+    }
+    else if(board[3] == 3; and board[4] == 3; and board[5] == 3;){
+        setPosition(0,10);
+        setColour(WHITE);
+        cout << "Player two wins!";
+        return true;
+    }
+    else if(board[6] == 3; and board[7] == 3; and board[8] == 3;){
+        setPosition(0,10);
+        setColour(WHITE);
+        cout << "Player two wins!";
+        return true;
+    }
+    else if(board[0] == 3; and board[3] == 3; and board[6] == 3;){
+        setPosition(0,10);
+        setColour(WHITE);
+        cout << "Player two wins!";
+        return true;
+    }
+    else if(board[1] == 3; and board[4] == 3; and board[7] == 3;){
+        setPosition(0,10);
+        setColour(WHITE);
+        cout << "Player two wins!";
+        return true;
+    }
+    else if(board[2] == 3; and board[5] == 3; and board[8] == 3;){
+        setPosition(0,10);
+        setColour(WHITE);
+        cout << "Player two wins!";
+        return true;
+    }
+    else if(board[0] == 3; and board[4] == 3; and board[8] == 3;){
+        setPosition(0,10);
+        setColour(WHITE);
+        cout << "Player two wins!";
+        return true;
+    }
+    else if(board[2] == 3; and board[4] == 3; and board[6] == 3;){
+        setPosition(0,10);
+        setColour(WHITE);
+        cout << "Player two wins!";
+        return true;
+    }
+}
+
+bool stale(int board[]){
+    if(!board(0) == 1 and !board(1) == 1 and !board(2) == 1 and !board(3) == 1 and !board(4) == 1 and !board(5) == 1 and !board(6) == 1 and !board(6) == 1 and !board(7) == 1 and !board(8) == 1){
+        return true;
+    }
+}
