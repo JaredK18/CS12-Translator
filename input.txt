@@ -1,0 +1,5 @@
+int newNumber = 5;
+bool newBool = false;
+char newChar = 'H';
+string newString = "string";
+double newDouble = 10.5;
