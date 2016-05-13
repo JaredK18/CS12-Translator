@@ -18,43 +18,53 @@ using namespace std;
         
     }
  */
-int main(int argc, char** argv) {
+bool stringMatch(char fileContents[], int startPosition, string searchTerm);
+
+int main(int argc, char** argv){
     ifstream input;
     input.open("input.txt");
     ofstream output;
     output.open("outputpy.py");
     ofstream output1;
     output1.open("outputtxt.txt");
-    char newLine[10000];
+    char fileContents[10000];
     int loop = 0;
     int end = 0;
-    while(input.get(newLine[end])){
-        cout << newLine[end];
+    while(input.get(fileContents[end])){
+        cout << fileContents[end];
         end++;
     }
     //this puts one line of code into the array newLine
     do{
-        if(newLine[loop] == 'i' and newLine[loop+1] == 'n' and newLine[loop+2] == 't' and newLine[loop+3] == ' '){
+        if(stringMatch(fileContents, loop, "#include ")){
+            while(fileContents[loop] != '\n'){
+                loop++;
+            }
+            while(fileContents[loop] == '\n'){
+                loop++;
+            }
+        }
+        if(stringMatch(fileContents, loop, "int ")){
             loop = loop + 4;
         }
-        else if(newLine[loop] == 'b' and newLine[loop+1] == 'o' and newLine[loop+2] == 'o' and newLine[loop+3] == 'l' and newLine[loop+4] == ' '){
+        else if(stringMatch(fileContents, loop, "bool ")){
             loop = loop + 5;
         }
-        else if(newLine[loop] == 'c' and newLine[loop+1] == 'h' and newLine[loop+2] == 'a' and newLine[loop+3] == 'r' and newLine[loop+4] == ' '){
+        else if(stringMatch(fileContents, loop, "char ")){
             loop = loop + 5;
         }
-        else if(newLine[loop] == 's' and newLine[loop+1] == 't' and newLine[loop+2] == 'r' and newLine[loop+3] == 'i' and newLine[loop+4] == 'n' and newLine[loop+5] == 'g' and newLine[loop+6] == ' '){
+        else if(stringMatch(fileContents, loop, "string ")){
             loop = loop + 7;
         }
-        else if(newLine[loop] == 'd' and newLine[loop+1] == 'o' and newLine[loop+2] == 'u' and newLine[loop+3] == 'b' and newLine[loop+4] == 'l' and newLine[loop+5] == 'e' and newLine[loop+6] == ' '){
+        else if(stringMatch(fileContents, loop, "double ")){
             loop = loop + 7;
         }
-        else if(newLine[loop] == ';'){
+        else if(fileContents[loop] == ';'){
             //output << endl;
             loop++;
         }
-        output << newLine[loop];
-        output1 << newLine[loop];
+        output << fileContents[loop];
+        output1 << fileContents[loop];
         loop++;
     }while(loop != end);
     input.close();
@@ -63,3 +73,13 @@ int main(int argc, char** argv) {
     return 0;
 }
 
+
+bool stringMatch(char fileContents[], int startPosition, string searchTerm){
+    bool match = true;
+    for(int i = startPosition; match and i < (searchTerm.length() + startPosition); i++){
+        if(fileContents[i] != searchTerm.at(i-startPosition)){
+            match = false;
+        }
+    }
+    return match;
+}
