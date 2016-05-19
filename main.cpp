@@ -8,76 +8,103 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <windows.h>
 
 using namespace std;
 
 /*
  * 
- * bool beforeCode = true;
-    while(line[location] != '\n'){
-        
-    }
+ * redooooo inputs into 4/2th demetion arrays so cades willz works
  */
-bool stringMatch(char fileContents[], int startPosition, string searchTerm);
+bool stringMatch(char fileContents[][1000], int lineIndex, int startPosition, string searchTerm);
 
 int main(int argc, char** argv){
     ifstream input;
     input.open("input.txt");
-    ofstream output;
-    output.open("outputpy.py");
-    ofstream output1;
-    output1.open("outputtxt.txt");
-    char fileContents[10000];
-    int loop = 0;
-    int end = 0;
-    while(input.get(fileContents[end])){
-        cout << fileContents[end];
-        end++;
+    ofstream outputPy;
+    outputPy.open("outputpy.py");
+    ofstream outputTxt;
+    outputTxt.open("outputtxt.txt");
+    ofstream ogOutput;
+    ogOutput.open("outputog.txt");
+    char fileContents[1000][1000];
+    int rowIndex = 0;
+    int columnIndex = 0;
+    int lastChar = 0;
+    int lastLine = 0;
+    bool doPrint = true;
+    bool end = true;
+    bool end2 = true;
+    while(input.get(fileContents[lastLine][lastChar])){
+        ogOutput << fileContents[lastLine][lastChar];
+        cout << fileContents[lastLine][lastChar];
+        if(fileContents[lastLine][lastChar] == '\n'){            
+            lastChar = -1;
+            lastLine++;
+        }
+        lastChar++;
+        //cout << lastChar << endl;
     }
     //this puts one line of code into the array newLine
     do{
-        if(stringMatch(fileContents, loop, "#include ")){
-            while(fileContents[loop] != '\n'){
-                loop++;
-            }
-            while(fileContents[loop] == '\n'){
-                loop++;
-            }
+        if(stringMatch(fileContents, rowIndex, columnIndex, "#include ")){
+            rowIndex++;
+            columnIndex = 0;
+            doPrint = false;
         }
-        if(stringMatch(fileContents, loop, "int ")){
-            loop = loop + 4;
+        //Process variable declarations
+        if(stringMatch(fileContents, rowIndex, columnIndex, "int ")){
+            columnIndex = columnIndex + 4;
         }
-        else if(stringMatch(fileContents, loop, "bool ")){
-            loop = loop + 5;
+        else if(stringMatch(fileContents, rowIndex, columnIndex, "bool ")){
+            columnIndex = columnIndex + 5;
         }
-        else if(stringMatch(fileContents, loop, "char ")){
-            loop = loop + 5;
+        else if(stringMatch(fileContents, rowIndex, columnIndex, "char ")){
+            columnIndex = columnIndex + 5;
         }
-        else if(stringMatch(fileContents, loop, "string ")){
-            loop = loop + 7;
+        else if(stringMatch(fileContents, rowIndex, columnIndex, "string ")){
+            columnIndex = columnIndex + 7;
         }
-        else if(stringMatch(fileContents, loop, "double ")){
-            loop = loop + 7;
+        else if(stringMatch(fileContents, rowIndex, columnIndex, "double ")){
+            columnIndex = columnIndex + 7;
         }
-        else if(fileContents[loop] == ';'){
+        else if(fileContents[rowIndex][columnIndex] == ';'){
             //output << endl;
-            loop++;
+            columnIndex++;
         }
-        output << fileContents[loop];
-        output1 << fileContents[loop];
-        loop++;
-    }while(loop != end);
+        if(doPrint){
+            outputPy << fileContents[rowIndex][columnIndex];
+            outputTxt << fileContents[rowIndex][columnIndex];
+        }
+        while(fileContents[rowIndex][columnIndex] == '\n'){
+            rowIndex++;
+            columnIndex = 0;
+            doPrint = false;
+        }
+        if(doPrint){
+            columnIndex++;
+        }
+        doPrint = true;
+        if(!end2){
+            end = false;
+        }
+        if(rowIndex == lastLine){
+            end2 = false;
+        }
+        cout << endl << rowIndex << ' ' << columnIndex << ' ' << lastChar << endl;
+    }while(/*(rowIndex != lastLine)*/end or (columnIndex <= lastChar));
     input.close();
-    output.close();
-    output1.close();
+    outputPy.close();
+    outputTxt.close();
+    ogOutput.close();
     return 0;
 }
 
 
-bool stringMatch(char fileContents[], int startPosition, string searchTerm){
+bool stringMatch(char fileContents[][1000], int lineIndex, int startPosition, string searchTerm){
     bool match = true;
     for(int i = startPosition; match and i < (searchTerm.length() + startPosition); i++){
-        if(fileContents[i] != searchTerm.at(i-startPosition)){
+        if(fileContents[lineIndex][i] != searchTerm.at(i-startPosition)){
             match = false;
         }
     }
