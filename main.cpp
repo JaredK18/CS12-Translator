@@ -46,7 +46,7 @@ int main(int argc, char** argv){
         //cout << lastChar << endl;
     }
     //this puts one line of code into the array newLine
-    do{
+    while((rowIndex != lastLine)/*end*/ or (columnIndex <= lastChar)){
         if(stringMatch(fileContents, rowIndex, columnIndex, "#include ")){
             rowIndex++;
             columnIndex = 0;
@@ -69,7 +69,6 @@ int main(int argc, char** argv){
             columnIndex = columnIndex + 7;
         }
         else if(fileContents[rowIndex][columnIndex] == ';'){
-            //output << endl;
             columnIndex++;
         }
         if(doPrint){
@@ -85,14 +84,7 @@ int main(int argc, char** argv){
             columnIndex++;
         }
         doPrint = true;
-        if(!end2){
-            end = false;
-        }
-        if(rowIndex == lastLine){
-            end2 = false;
-        }
-        cout << endl << rowIndex << ' ' << columnIndex << ' ' << lastChar << endl;
-    }while(/*(rowIndex != lastLine)*/end or (columnIndex <= lastChar));
+    }
     input.close();
     outputPy.close();
     outputTxt.close();
