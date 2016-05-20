@@ -17,6 +17,8 @@ using namespace std;
  * redooooo inputs into 4/2th demetion arrays so cades willz works
  */
 bool stringMatch(char fileContents[][1000], int lineIndex, int startPosition, string searchTerm);
+//void pyFileCreator(char )
+//void print(string maybe);
 
 int main(int argc, char** argv){
     ifstream input;
@@ -70,6 +72,47 @@ int main(int argc, char** argv){
         }
         else if(fileContents[rowIndex][columnIndex] == ';'){
             columnIndex++;
+        }
+        else if(stringMatch(fileContents, rowIndex, columnIndex, "cout")){
+            columnIndex = columnIndex + 4;
+            outputPy << "print (";
+            outputTxt << "print (";
+            while(fileContents[rowIndex][columnIndex] == ' ' or fileContents[rowIndex][columnIndex] == '<'){
+                columnIndex++;
+            }
+            while(fileContents[rowIndex][columnIndex] != ';'){
+                cout << "test loop 2\n" << columnIndex << endl;
+                Sleep(50);
+                if(stringMatch(fileContents, rowIndex, columnIndex, "<<")){
+                    columnIndex = columnIndex + 2;
+                    outputPy << fileContents[rowIndex][columnIndex];
+                    outputTxt << fileContents[rowIndex][columnIndex];
+                    cout << "test loop 77\n";
+                }
+                else if(fileContents[rowIndex][columnIndex] == ' '){
+                    columnIndex++;
+                    cout << "test loop 88\n";
+                }
+                //might not want this
+                else if(fileContents[rowIndex][columnIndex] == '\n'){                    
+                    outputPy << ")\n";
+                    cout << "test loop 99\n";
+                    outputTxt << ")\n";   
+                    rowIndex++;
+                    columnIndex = 0;    
+                    outputPy << "print (";
+                    outputTxt << "print (";
+                }
+                else{
+                    cout << "test loop 00\n";
+                    outputPy << fileContents[rowIndex][columnIndex];
+                    outputTxt << fileContents[rowIndex][columnIndex];
+                    columnIndex++;
+                }
+            }
+            columnIndex++;
+            outputPy << ")";
+            outputTxt << ")";
         }
         if(doPrint){
             outputPy << fileContents[rowIndex][columnIndex];
