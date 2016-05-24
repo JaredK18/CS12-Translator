@@ -16,7 +16,7 @@ using namespace std;
  * 
  * redooooo inputs into 4/2th demetion arrays so cades willz works
  */
-bool stringMatch(char fileContents[][1000], int lineIndex, int startPosition, string searchTerm);
+bool stringMatch(char fileContents[][1000], int rowIndex, int startPosition, string searchTerm);
 //void pyFileCreator(char )
 //void print(string maybe);
 
@@ -34,21 +34,23 @@ int main(int argc, char** argv){
     int columnIndex = 0;
     int lastChar = 0;
     int lastLine = 0;
+    int tabs = 0;
+    bool beforeCode = false;
     bool doPrint = true;
-    bool end = true;
-    bool end2 = true;
+    bool inQuotes = false;
     while(input.get(fileContents[lastLine][lastChar])){
         ogOutput << fileContents[lastLine][lastChar];
         cout << fileContents[lastLine][lastChar];
-        if(fileContents[lastLine][lastChar] == '\n'){            
+        if(fileContents[lastLine][lastChar] == '\n'){
             lastChar = -1;
             lastLine++;
         }
         lastChar++;
-        //cout << lastChar << endl;
     }
     //this puts one line of code into the array newLine
-    while((rowIndex != lastLine)/*end*/ or (columnIndex <= lastChar)){
+    while((rowIndex != lastLine) or (columnIndex <= lastChar)){
+        cout << fileContents[rowIndex][columnIndex];
+		//Process includes
         if(stringMatch(fileContents, rowIndex, columnIndex, "#include ")){
             rowIndex++;
             columnIndex = 0;
@@ -73,6 +75,7 @@ int main(int argc, char** argv){
         else if(fileContents[rowIndex][columnIndex] == ';'){
             columnIndex++;
         }
+		//Process outputs to the console
         else if(stringMatch(fileContents, rowIndex, columnIndex, "cout")){
             columnIndex = columnIndex + 4;
             outputPy << "print (";
@@ -81,22 +84,28 @@ int main(int argc, char** argv){
                 columnIndex++;
             }
             while(fileContents[rowIndex][columnIndex] != ';'){
-                cout << "test loop 2\n" << columnIndex << endl;
-                Sleep(50);
+                if(fileContents[rowIndex][columnIndex] == '"'){
+                    inQuotes = true;
+                }
+                while(inQuotes){
+                    outputPy << fileContents[rowIndex][columnIndex];
+                    outputTxt << fileContents[rowIndex][columnIndex];
+                    columnIndex++;
+                    if(fileContents[rowIndex][columnIndex] == '"'){
+                        inQuotes = false;
+                    }
+                    cout << "test";
+                }
                 if(stringMatch(fileContents, rowIndex, columnIndex, "<<")){
                     columnIndex = columnIndex + 2;
                     outputPy << fileContents[rowIndex][columnIndex];
                     outputTxt << fileContents[rowIndex][columnIndex];
-                    cout << "test loop 77\n";
                 }
                 else if(fileContents[rowIndex][columnIndex] == ' '){
                     columnIndex++;
-                    cout << "test loop 88\n";
                 }
-                //might not want this
                 else if(fileContents[rowIndex][columnIndex] == '\n'){                    
                     outputPy << ")\n";
-                    cout << "test loop 99\n";
                     outputTxt << ")\n";   
                     rowIndex++;
                     columnIndex = 0;    
@@ -104,7 +113,6 @@ int main(int argc, char** argv){
                     outputTxt << "print (";
                 }
                 else{
-                    cout << "test loop 00\n";
                     outputPy << fileContents[rowIndex][columnIndex];
                     outputTxt << fileContents[rowIndex][columnIndex];
                     columnIndex++;
@@ -113,6 +121,45 @@ int main(int argc, char** argv){
             columnIndex++;
             outputPy << ")";
             outputTxt << ")";
+        }
+        else if(stringMatch(fileContents, rowIndex, columnIndex, "if(")){
+            outputPy << "if ";
+            outputTxt << "if ";
+            columnIndex = columnIndex + 3;
+            tabs++;
+            while(fileContents[rowIndex][columnIndex] != ')'){
+                outputPy << fileContents[rowIndex][columnIndex];
+                outputTxt << fileContents[rowIndex][columnIndex];
+                columnIndex++;
+            }
+            columnIndex = columnIndex + 2;
+            outputPy << ":";
+            outputTxt << ":";
+        }
+        else if(stringMatch(fileContents, rowIndex, columnIndex, "else if(")){
+            outputPy << "elif ";
+            outputTxt << "elif ";
+            columnIndex = columnIndex + 8;
+            tabs++;
+            while(fileContents[rowIndex][columnIndex] != ')'){
+                outputPy << fileContents[rowIndex][columnIndex];
+                outputTxt << fileContents[rowIndex][columnIndex];
+                columnIndex++;
+            }
+            columnIndex = columnIndex + 2;
+            outputPy << ":";
+            outputTxt << ":";
+        }
+        else if(stringMatch(fileContents, rowIndex, columnIndex, "else{")){
+            outputPy << "else:";
+            outputTxt << "else:";
+            columnIndex = columnIndex + 5;
+            tabs++;
+        }
+        else if(fileContents[rowIndex][columnIndex] == '}'){
+            columnIndex++;
+            doPrint = false;
+            tabs--;
         }
         if(doPrint){
             outputPy << fileContents[rowIndex][columnIndex];
@@ -136,10 +183,10 @@ int main(int argc, char** argv){
 }
 
 
-bool stringMatch(char fileContents[][1000], int lineIndex, int startPosition, string searchTerm){
+bool stringMatch(char fileContents[][1000], int rowIndex, int startPosition, string searchTerm){
     bool match = true;
     for(int i = startPosition; match and i < (searchTerm.length() + startPosition); i++){
-        if(fileContents[lineIndex][i] != searchTerm.at(i-startPosition)){
+        if(fileContents[rowIndex][i] != searchTerm.at(i-startPosition)){
             match = false;
         }
     }
