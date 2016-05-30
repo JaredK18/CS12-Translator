@@ -3,3 +3,5 @@ bool newBool = false;
 char newChar = 'H';
 string newString = "string";
 double newDouble = 10.5;
+
+cout << "I hope this works. " << "cool";

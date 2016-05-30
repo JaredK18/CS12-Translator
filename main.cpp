@@ -17,6 +17,7 @@ using namespace std;
  * redooooo inputs into 4/2th demetion arrays so cades willz works
  */
 bool stringMatch(char fileContents[][1000], int rowIndex, int startPosition, string searchTerm);
+string consoleOutput(char fileContents[][1000], int rowIndex, int startPosition);
 //void pyFileCreator(char )
 //void print(string maybe);
 
@@ -78,6 +79,9 @@ int main(int argc, char** argv){
 		//Process outputs to the console
         else if(stringMatch(fileContents, rowIndex, columnIndex, "cout")){
             columnIndex = columnIndex + 4;
+            outputPy << consoleOutput(fileContents, rowIndex, columnIndex);
+            outputTxt << consoleOutput(fileContents, rowIndex, columnIndex);
+            /*columnIndex = columnIndex + 4;
             outputPy << "print (";
             outputTxt << "print (";
             while(fileContents[rowIndex][columnIndex] == ' ' or fileContents[rowIndex][columnIndex] == '<'){
@@ -120,7 +124,7 @@ int main(int argc, char** argv){
             }
             columnIndex++;
             outputPy << ")";
-            outputTxt << ")";
+            outputTxt << ")";*/
         }
         else if(stringMatch(fileContents, rowIndex, columnIndex, "if(")){
             outputPy << "if ";
@@ -182,7 +186,6 @@ int main(int argc, char** argv){
     return 0;
 }
 
-
 bool stringMatch(char fileContents[][1000], int rowIndex, int startPosition, string searchTerm){
     bool match = true;
     for(int i = startPosition; match and i < (searchTerm.length() + startPosition); i++){
@@ -191,4 +194,27 @@ bool stringMatch(char fileContents[][1000], int rowIndex, int startPosition, str
         }
     }
     return match;
+}
+
+string consoleOutput(char fileContents[][1000], int rowIndex, int startPosition){
+    string finalOutput;
+    while(fileContents[rowIndex][startPosition] != ';'){
+        if(fileContents[rowIndex][startPosition] == '<' and fileContents[rowIndex][startPosition + 1] == ' '){
+            startPosition = startPosition + 3;
+            while(fileContents[rowIndex][startPosition] != '"'){
+                finalOutput.append(&fileContents[rowIndex][startPosition]);
+                startPosition++;
+            }
+        }
+        else if(fileContents[rowIndex][startPosition] == '<' and fileContents[rowIndex][startPosition + 1] == '"'){
+            startPosition = startPosition + 2;
+            while(fileContents[rowIndex][startPosition] != '"'){
+                finalOutput.append(&fileContents[rowIndex][startPosition]);
+                startPosition++;
+            }
+        }
+        else{
+            startPosition++;
+        }
+    }
 }
