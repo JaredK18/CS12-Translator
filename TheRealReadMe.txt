@@ -2,7 +2,7 @@ Shawn:
 functions, while loops
 
 Jared:
-Fix nested if/elses, for loops
+tabs
 
 Jeff:
-switches, tabs
+for loops
