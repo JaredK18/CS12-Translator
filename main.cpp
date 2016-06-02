@@ -19,6 +19,7 @@ bool stringMatch(char fileContents[][1000], int rowIndex, int startPosition, str
 int variableDeclaration(char fileContents[][1000], int rowIndex, int columnIndex);
 void consoleOutput(char fileContents[][1000], int& rowIndex, int& columnIndex, ofstream &outputPy, ofstream &outputTxt);
 void ifStatement(char fileContents[][1000], int& rowIndex, int& columnIndex, ofstream &outputPy, ofstream &outputTxt);
+void caseStatement(char fileContents[][1000], int &rowIndex, int &columnIndex, ofstream &outputPy, ofstream &outputTxt, int switchVariableRow, int switchVariableColumn, bool inSwitch);
 template <typename genericOutput> void fileOutput(genericOutput output, ofstream &outputPy, ofstream &outputTxt){
     outputPy << output;
     outputTxt << output;
@@ -36,8 +37,11 @@ int main(int argc, char** argv){
     int columnIndex = 0;
     int lastChar = 0;
     int lastLine = 0;
+    int switchVariableColumn = 0;
+    int switchVariableRow = 0;
     bool beforeCode = false;
     bool doPrint = true;
+    bool inSwitch = false;
     while(input.get(fileContents[lastLine][lastChar])){
         cout << fileContents[lastLine][lastChar];
         if(fileContents[lastLine][lastChar] == '\n'){
@@ -64,10 +68,33 @@ int main(int argc, char** argv){
         else if(stringMatch(fileContents, rowIndex, columnIndex, "cout")){
             consoleOutput(fileContents, rowIndex, columnIndex, outputPy, outputTxt);
         }
+        else if(stringMatch(fileContents, rowIndex, columnIndex, "switch (")){
+            
+            columnIndex = columnIndex + 8;
+            switchVariableRow = rowIndex;
+            switchVariableColumn = columnIndex;
+            rowIndex++;
+            columnIndex = 0;
+        }
+        else if(stringMatch(fileContents, rowIndex, columnIndex, "case ")){
+            columnIndex = columnIndex + 5;
+            caseStatement(fileContents, rowIndex, columnIndex, outputPy, outputTxt, switchVariableRow, switchVariableColumn, inSwitch);
+            inSwitch = true;
+        }
+        else if(stringMatch(fileContents, rowIndex, columnIndex, "default:")){
+            columnIndex = 0;
+            rowIndex++;
+            fileOutput("else:\n", outputPy, outputTxt);
+            inSwitch = false;
+        }
         //Process if/else/else if
         ifStatement(fileContents, rowIndex, columnIndex, outputPy, outputTxt);
         if(fileContents[rowIndex][columnIndex] == '}'){
             columnIndex++;
+            doPrint = false;
+        }
+        if(stringMatch(fileContents, rowIndex, columnIndex, "break;")){
+            columnIndex = columnIndex + 6;
             doPrint = false;
         }
         if(doPrint){
@@ -189,4 +216,24 @@ void ifStatement(char fileContents[][1000], int& rowIndex, int& columnIndex, ofs
         columnIndex = columnIndex + 5;
         return;
     }
+}
+
+void caseStatement(char fileContents[][1000], int &rowIndex, int &columnIndex, ofstream &outputPy, ofstream &outputTxt, int switchVariableRow, int switchVariableColumn, bool inSwitch){
+    int i = 0;
+    if(inSwitch){
+        fileOutput("elif ", outputPy, outputTxt);
+    }
+    else{
+        fileOutput("if ", outputPy, outputTxt);
+    }
+    while(fileContents[switchVariableRow][switchVariableColumn+i] != ')'){
+        fileOutput(fileContents[switchVariableRow][switchVariableColumn+i], outputPy, outputTxt);
+        i++;
+    }
+    fileOutput(" == ", outputPy, outputTxt);
+    while(fileContents[rowIndex][columnIndex] != ':'){
+        fileOutput(fileContents[rowIndex][columnIndex], outputPy, outputTxt);
+        columnIndex++;
+    }
+    columnIndex++;
 }
