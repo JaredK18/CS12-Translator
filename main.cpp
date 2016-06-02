@@ -69,8 +69,14 @@ int main(int argc, char** argv){
             consoleOutput(fileContents, rowIndex, columnIndex, outputPy, outputTxt);
         }
         else if(stringMatch(fileContents, rowIndex, columnIndex, "switch (")){
-            
             columnIndex = columnIndex + 8;
+            switchVariableRow = rowIndex;
+            switchVariableColumn = columnIndex;
+            rowIndex++;
+            columnIndex = 0;
+        }
+        else if(stringMatch(fileContents, rowIndex, columnIndex, "switch(")){
+            columnIndex = columnIndex + 7;
             switchVariableRow = rowIndex;
             switchVariableColumn = columnIndex;
             rowIndex++;
@@ -236,4 +242,5 @@ void caseStatement(char fileContents[][1000], int &rowIndex, int &columnIndex, o
         columnIndex++;
     }
     columnIndex++;
+    return;
 }
