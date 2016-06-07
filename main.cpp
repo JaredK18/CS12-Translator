@@ -1,10 +1,3 @@
-/* 
- * File:   main.cpp
- * Author: Jared
- *
- * Created on May 10, 2016, 1:30 PM
- */
-
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -20,6 +13,7 @@ int variableDeclaration(char fileContents[][1000], int rowIndex, int columnIndex
 void consoleOutput(char fileContents[][1000], int& rowIndex, int& columnIndex, ofstream &outputPy, ofstream &outputTxt);
 void ifStatement(char fileContents[][1000], int& rowIndex, int& columnIndex, ofstream &outputPy, ofstream &outputTxt);
 void caseStatement(char fileContents[][1000], int &rowIndex, int &columnIndex, ofstream &outputPy, ofstream &outputTxt, int switchVariableRow, int switchVariableColumn);
+void whileLoopStatement(char fileContents[][1000], int& rowIndex, int& columnIndex, ofstream &outputPy, ofstream &outputTxt);
 template <typename genericOutput> void fileOutput(genericOutput output, ofstream &outputPy, ofstream &outputTxt){
     outputPy << output;
     outputTxt << output;
@@ -84,6 +78,10 @@ int main(int argc, char** argv){
         else if(stringMatch(fileContents, rowIndex, columnIndex, "case ")){
             columnIndex = columnIndex + 5;
             caseStatement(fileContents, rowIndex, columnIndex, outputPy, outputTxt, switchVariableRow, switchVariableColumn);
+        }
+        else if(stringMatch(fileContents, rowIndex, columnIndex, "while(")){
+            fileOutput("while ");
+            columnIndex = columnIndex + 6;
         }
         else if(stringMatch(fileContents, rowIndex, columnIndex, "default:")){
             columnIndex = 0;
@@ -231,4 +229,8 @@ void caseStatement(char fileContents[][1000], int &rowIndex, int &columnIndex, o
     }
     columnIndex++;
     return;
+}
+
+void whileLoopStatement(char fileContents[][1000], int& rowIndex, int& columnIndex, ofstream &outputPy, ofstream &outputTxt){
+    
 }
