@@ -13,7 +13,6 @@ int variableDeclaration(char fileContents[][1000], int rowIndex, int columnIndex
 void consoleOutput(char fileContents[][1000], int& rowIndex, int& columnIndex, ofstream &outputPy, ofstream &outputTxt);
 void ifStatement(char fileContents[][1000], int& rowIndex, int& columnIndex, ofstream &outputPy, ofstream &outputTxt);
 void caseStatement(char fileContents[][1000], int &rowIndex, int &columnIndex, ofstream &outputPy, ofstream &outputTxt, int switchVariableRow, int switchVariableColumn);
-void whileLoopStatement(char fileContents[][1000], int& rowIndex, int& columnIndex, ofstream &outputPy, ofstream &outputTxt);
 template <typename genericOutput> void fileOutput(genericOutput output, ofstream &outputPy, ofstream &outputTxt){
     outputPy << output;
     outputTxt << output;
@@ -80,8 +79,10 @@ int main(int argc, char** argv){
             caseStatement(fileContents, rowIndex, columnIndex, outputPy, outputTxt, switchVariableRow, switchVariableColumn);
         }
         else if(stringMatch(fileContents, rowIndex, columnIndex, "while(")){
-            fileOutput("while ");
+            fileOutput("while(", outputPy, outputTxt);
             columnIndex = columnIndex + 6;
+            fileOutput(':', outputPy, outputTxt);
+            columnIndex = columnIndex + 1;
         }
         else if(stringMatch(fileContents, rowIndex, columnIndex, "default:")){
             columnIndex = 0;
@@ -91,6 +92,10 @@ int main(int argc, char** argv){
         //Process if/else/else if
         ifStatement(fileContents, rowIndex, columnIndex, outputPy, outputTxt);
         if(fileContents[rowIndex][columnIndex] == '}'){
+            columnIndex++;
+            doPrint = false;
+        }
+        if(fileContents[rowIndex][columnIndex] == '{'){
             columnIndex++;
             doPrint = false;
         }
@@ -187,25 +192,25 @@ void consoleOutput(char fileContents[][1000], int& rowIndex, int& columnIndex, o
 
 void ifStatement(char fileContents[][1000], int& rowIndex, int& columnIndex, ofstream &outputPy, ofstream &outputTxt){
     if(stringMatch(fileContents, rowIndex, columnIndex, "if(")){
-        fileOutput("if ", outputPy, outputTxt);
+        fileOutput("if(", outputPy, outputTxt);
         columnIndex = columnIndex + 3;
-        while(fileContents[rowIndex][columnIndex] != ')'){
-            fileOutput(fileContents[rowIndex][columnIndex], outputPy, outputTxt);
+        do{
             columnIndex++;
-        }
-        columnIndex = columnIndex + 2;
+            fileOutput(fileContents[rowIndex][columnIndex], outputPy, outputTxt);
+        }while(fileContents[rowIndex][columnIndex] != ')');
         fileOutput(":", outputPy, outputTxt);
+        columnIndex = columnIndex + 1;
         return;
     }
     else if(stringMatch(fileContents, rowIndex, columnIndex, "else if(")){
         fileOutput("elif ", outputPy, outputTxt);
         columnIndex = columnIndex + 8;
-        while(fileContents[rowIndex][columnIndex] != ')'){
-            fileOutput(fileContents[rowIndex][columnIndex], outputPy, outputTxt);
+        do{
             columnIndex++;
-        }
-        columnIndex = columnIndex + 2;
+            fileOutput(fileContents[rowIndex][columnIndex], outputPy, outputTxt);
+        }while(fileContents[rowIndex][columnIndex] != ')');
         fileOutput(":", outputPy, outputTxt);
+        columnIndex = columnIndex + 1;
         return;
     }
     else if(stringMatch(fileContents, rowIndex, columnIndex, "else{")){
@@ -229,8 +234,4 @@ void caseStatement(char fileContents[][1000], int &rowIndex, int &columnIndex, o
     }
     columnIndex++;
     return;
-}
-
-void whileLoopStatement(char fileContents[][1000], int& rowIndex, int& columnIndex, ofstream &outputPy, ofstream &outputTxt){
-    
 }
