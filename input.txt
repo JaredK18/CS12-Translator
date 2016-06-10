@@ -1,5 +1,17 @@
+#include <iostream>
+
+int test;
+void test();
+
 int newNumber = 5;
 bool newBool = false;
 char newChar = 'H';
 string newString = "string";
 double newDouble = 10.5;
+cout << "Heyo" << endl;
+
+
+
+void test(){
+cout << "Bye" << endl;
+}
