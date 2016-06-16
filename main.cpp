@@ -10,12 +10,14 @@ using namespace std;
  */
 bool stringMatch(char fileContents[][1000], int rowIndex, int startPosition, string searchTerm);
 int variableDeclaration(char fileContents[][1000], int rowIndex, int columnIndex);
-void consoleOutput(char fileContents[][1000], int& rowIndex, int& columnIndex, ofstream &outputPy, ofstream &outputTxt);
-void ifStatement(char fileContents[][1000], int& rowIndex, int& columnIndex, ofstream &outputPy, ofstream &outputTxt);
-void caseStatement(char fileContents[][1000], int &rowIndex, int &columnIndex, ofstream &outputPy, ofstream &outputTxt, int switchVariableRow, int switchVariableColumn);
+void consoleOutput(char fileContents[][1000], int& rowIndex, int& columnIndex, ofstream &outputPy, ofstream &outputTxt, int& tabs);
+void ifStatement(char fileContents[][1000], int& rowIndex, int& columnIndex, ofstream &outputPy, ofstream &outputTxt, int& tabs);
+void caseStatement(char fileContents[][1000], int &rowIndex, int &columnIndex, ofstream &outputPy, ofstream &outputTxt, int switchVariableRow, int switchVariableColumn, int& tabs);
+void tabPrinter(char fileContents[][1000], int& rowIndex, int &columnIndex, int& tabs, ofstream &outputPy, ofstream &outputTxt);
 template <typename genericOutput> void fileOutput(genericOutput output, ofstream &outputPy, ofstream &outputTxt){
     outputPy << output;
     outputTxt << output;
+    cout << output;
 }
 
 int main(int argc, char** argv){
@@ -30,12 +32,12 @@ int main(int argc, char** argv){
     int columnIndex = 0;
     int lastChar = 0;
     int lastLine = 0;
+    int tabs = 0;
     int switchVariableColumn = 0;
     int switchVariableRow = 0;
-    bool beforeCode = false;
+    //bool beforeCode = false;
     bool doPrint = true;
     while(input.get(fileContents[lastLine][lastChar])){
-        cout << fileContents[lastLine][lastChar];
         if(fileContents[lastLine][lastChar] == '\n'){
             lastChar = -1;
             lastLine++;
@@ -47,8 +49,7 @@ int main(int argc, char** argv){
     while((rowIndex != lastLine) or (columnIndex <= lastChar)){
 		//Process includes
         if(stringMatch(fileContents, rowIndex, columnIndex, "#include ")){
-            rowIndex++;
-            columnIndex = 0;
+            tabPrinter(fileContents, rowIndex, columnIndex, tabs, outputPy, outputTxt);
             doPrint = false;
         }
         //Process variable declarations
@@ -58,44 +59,53 @@ int main(int argc, char** argv){
         }
 	//Process outputs to the console
         else if(stringMatch(fileContents, rowIndex, columnIndex, "cout")){
-            consoleOutput(fileContents, rowIndex, columnIndex, outputPy, outputTxt);
+            consoleOutput(fileContents, rowIndex, columnIndex, outputPy, outputTxt, tabs);
         }
         else if(stringMatch(fileContents, rowIndex, columnIndex, "switch (")){
             columnIndex = columnIndex + 8;
             switchVariableRow = rowIndex;
             switchVariableColumn = columnIndex;
-            rowIndex++;
+            tabPrinter(fileContents, rowIndex, columnIndex, tabs, outputPy, outputTxt);
             columnIndex = 0;
         }
         else if(stringMatch(fileContents, rowIndex, columnIndex, "switch(")){
             columnIndex = columnIndex + 7;
             switchVariableRow = rowIndex;
             switchVariableColumn = columnIndex;
-            rowIndex++;
+            tabPrinter(fileContents, rowIndex, columnIndex, tabs, outputPy, outputTxt);
             columnIndex = 0;
         }
         else if(stringMatch(fileContents, rowIndex, columnIndex, "case ")){
             columnIndex = columnIndex + 5;
-            caseStatement(fileContents, rowIndex, columnIndex, outputPy, outputTxt, switchVariableRow, switchVariableColumn);
+            caseStatement(fileContents, rowIndex, columnIndex, outputPy, outputTxt, switchVariableRow, switchVariableColumn, tabs);
         }
         else if(stringMatch(fileContents, rowIndex, columnIndex, "while(")){
             fileOutput("while(", outputPy, outputTxt);
             columnIndex = columnIndex + 6;
-            fileOutput(':', outputPy, outputTxt);
+            while(fileContents[rowIndex][columnIndex] != ')'){
+                fileOutput(fileContents[rowIndex][columnIndex], outputPy, outputTxt);
+                columnIndex++;
+            }
+            fileOutput("):", outputPy, outputTxt);
             columnIndex = columnIndex + 1;
         }
         else if(stringMatch(fileContents, rowIndex, columnIndex, "default:")){
             columnIndex = 0;
-            rowIndex++;
+            tabPrinter(fileContents, rowIndex, columnIndex, tabs, outputPy, outputTxt);
             fileOutput("else:\n", outputPy, outputTxt);
         }
         //Process if/else/else if
-        ifStatement(fileContents, rowIndex, columnIndex, outputPy, outputTxt);
+        ifStatement(fileContents, rowIndex, columnIndex, outputPy, outputTxt, tabs);
         if(fileContents[rowIndex][columnIndex] == '}'){
+            tabs--;
             columnIndex++;
+            if(fileContents[rowIndex][columnIndex] == '\n'){
+                tabPrinter(fileContents, rowIndex, columnIndex, tabs, outputPy, outputTxt);
+            }
             doPrint = false;
         }
         if(fileContents[rowIndex][columnIndex] == '{'){
+            tabs++;
             columnIndex++;
             doPrint = false;
         }
@@ -103,8 +113,7 @@ int main(int argc, char** argv){
             fileOutput(fileContents[rowIndex][columnIndex], outputPy, outputTxt);
         }
         while(fileContents[rowIndex][columnIndex] == '\n'){
-            rowIndex++;
-            columnIndex = 0;
+            tabPrinter(fileContents, rowIndex, columnIndex, tabs, outputPy, outputTxt);
             doPrint = false;
         }
         if(doPrint){
@@ -149,7 +158,7 @@ int variableDeclaration(char fileContents[][1000], int rowIndex, int columnIndex
     }
 }
 
-void consoleOutput(char fileContents[][1000], int& rowIndex, int& columnIndex, ofstream &outputPy, ofstream &outputTxt){
+void consoleOutput(char fileContents[][1000], int& rowIndex, int& columnIndex, ofstream &outputPy, ofstream &outputTxt, int& tabs){
     bool inQuotes = false;
     columnIndex = columnIndex + 4;
     fileOutput("print (", outputPy, outputTxt);
@@ -176,7 +185,7 @@ void consoleOutput(char fileContents[][1000], int& rowIndex, int& columnIndex, o
         }
         else if(fileContents[rowIndex][columnIndex] == '\n'){                    
             fileOutput(")\n", outputPy, outputTxt);
-            rowIndex++;
+            tabPrinter(fileContents, rowIndex, columnIndex, tabs, outputPy, outputTxt);
             columnIndex = 0;    
             fileOutput("print (", outputPy, outputTxt);
         }
@@ -190,7 +199,7 @@ void consoleOutput(char fileContents[][1000], int& rowIndex, int& columnIndex, o
     return;
 }
 
-void ifStatement(char fileContents[][1000], int& rowIndex, int& columnIndex, ofstream &outputPy, ofstream &outputTxt){
+void ifStatement(char fileContents[][1000], int& rowIndex, int& columnIndex, ofstream &outputPy, ofstream &outputTxt, int& tabs){
     if(stringMatch(fileContents, rowIndex, columnIndex, "if(")){
         fileOutput("if(", outputPy, outputTxt);
         columnIndex = columnIndex + 3;
@@ -220,7 +229,7 @@ void ifStatement(char fileContents[][1000], int& rowIndex, int& columnIndex, ofs
     }
 }
 
-void caseStatement(char fileContents[][1000], int &rowIndex, int &columnIndex, ofstream &outputPy, ofstream &outputTxt, int switchVariableRow, int switchVariableColumn){
+void caseStatement(char fileContents[][1000], int &rowIndex, int &columnIndex, ofstream &outputPy, ofstream &outputTxt, int switchVariableRow, int switchVariableColumn, int& tabs){
     int i = 0;
     fileOutput("if ", outputPy, outputTxt);
     while(fileContents[switchVariableRow][switchVariableColumn+i] != ')'){
@@ -233,5 +242,27 @@ void caseStatement(char fileContents[][1000], int &rowIndex, int &columnIndex, o
         columnIndex++;
     }
     columnIndex++;
+    return;
+}
+void tabPrinter(char fileContents[][1000], int& rowIndex, int &columnIndex, int& tabs, ofstream &outputPy, ofstream &outputTxt){
+    rowIndex++;
+    columnIndex = 0;
+    while(fileContents[rowIndex][columnIndex] == ' ' or fileContents[rowIndex][columnIndex] == '\t' or fileContents[rowIndex][columnIndex] == '\n' or fileContents[rowIndex][columnIndex] == '}'){
+        if(fileContents[rowIndex][columnIndex] == '}'){
+            tabs--;
+            columnIndex++;
+            if(fileContents[rowIndex][columnIndex] == '\n'){
+                tabPrinter(fileContents, rowIndex, columnIndex, tabs, outputPy, outputTxt);
+            }
+        }
+        if(fileContents[rowIndex][columnIndex] == '\n'){
+            rowIndex++;
+            columnIndex = -1;
+        }
+        columnIndex++;
+    }
+    for(int i = 1; i <= tabs; i++){
+        fileOutput("\t", outputPy, outputTxt);
+    }
     return;
 }
