@@ -15,7 +15,7 @@ using namespace std;
 /*
  * 
  */
-void functionDeclaration(char fileContents[][1000], int rowIndex, int columnIndex, int lastLine, ofstream &outputPy, ofstream &outputTxt);
+void functionDeclaration(char fileContents[][1000], int rowIndex, int columnIndex, int lastLine);
 bool stringMatch(char fileContents[][1000], int rowIndex, int startPosition, string searchTerm);
 int variableDeclaration(char fileContents[][1000], int rowIndex, int columnIndex);
 void consoleOutput(char fileContents[][1000], int& rowIndex, int& columnIndex, ofstream &outputPy, ofstream &outputTxt);
@@ -29,7 +29,7 @@ int main(int argc, char** argv){
     ofstream outputPy;
     outputPy.open("outputpy.py");
     ofstream outputTxt;
-    outputTxt.open("outputtxt.txt");
+    outputTxt.open("outputog.txt");
     ifstream input;
     input.open("input.txt");
     char fileContents[1000][1000];
@@ -56,8 +56,6 @@ int main(int argc, char** argv){
             columnIndex = 0;
             doPrint = false;
         }
-        //Process functions
-        functionDeclaration(fileContents, rowIndex, columnIndex, lastLine, outputPy, outputTxt);
         //Process variable declarations
         columnIndex = columnIndex + variableDeclaration(fileContents, rowIndex, columnIndex);
         if(fileContents[rowIndex][columnIndex] == ';'){
@@ -72,6 +70,10 @@ int main(int argc, char** argv){
         if(fileContents[rowIndex][columnIndex] == '}'){
             columnIndex++;
             doPrint = false;
+        }
+        if(fileContents[rowIndex][columnIndex] == '{'){
+            columnIndex++;
+            fileOutput(":", outputPy, outputTxt);
         }
         if(doPrint){
             fileOutput(fileContents[rowIndex][columnIndex], outputPy, outputTxt);
@@ -88,86 +90,104 @@ int main(int argc, char** argv){
     }
     outputPy.close();
     outputTxt.close();
+    input.close();
+    rowIndex = 0;
+    columnIndex = 0;
+    functionDeclaration(fileContents, rowIndex, columnIndex, lastLine);
     return 0;
 }
 
 
-void functionDeclaration(char fileContents[][1000], int rowIndex, int columnIndex,int lastLine, ofstream &outputPy, ofstream &outputTxt){
+void functionDeclaration(char fileContents[][1000], int rowIndex, int columnIndex,int lastLine){
+    ofstream outputPy;
+    outputPy.open("outputpy.py");
+    ofstream outputTxt;
+    outputTxt.open("outputtxt.txt");
+    ifstream input;
+    input.open("outputog.txt");
     bool isDone = false, foundFunction = false;;
     string functionDeclaration = "";
-    int storedIndex = 0;
+    int storedIndex = 0;//storedIndex is to store the start of the potential function definition. columnIndex still is used to read values
+    int lastChar = 0;
+    lastLine = 0;
     string storedDeclaration;
-    cout << "Function function run!" << endl;
-    if((stringMatch(fileContents, rowIndex, columnIndex, "int ")) || (stringMatch(fileContents, rowIndex, columnIndex, "bool ")) || (stringMatch(fileContents, rowIndex, columnIndex, "char ")) || (stringMatch(fileContents, rowIndex, columnIndex, "void ")) || (stringMatch(fileContents, rowIndex, columnIndex, "string ")) || (stringMatch(fileContents, rowIndex, columnIndex, "double "))){
-        cout << "possible function" << endl;
-        /*while (fileContents[rowIndex][columnIndex] != ' '){
-            cout << "Return type length: " << fileContents[rowIndex][columnIndex] << endl;
-            columnIndex++;
+    while(input.get(fileContents[lastLine][lastChar])){
+        cout << fileContents[lastLine][lastChar];
+        if(fileContents[lastLine][lastChar] == '\n'){
+            lastChar = -1;
+            lastLine++;
         }
-        columnIndex++;//Deals with the space after a return type
-        */
-        storedIndex = columnIndex; //storedIndex is to store the start of the potential function definition. columnIndex still is used to read values
+        lastChar++;
+    }
+    //cout << "Function function run!" << endl;
+    /*while (fileContents[rowIndex][columnIndex] != ' '){
+        cout << "Return type length: " << fileContents[rowIndex][columnIndex] << endl;
+        columnIndex++;
+    }
+    columnIndex++;//Deals with the space after a return type
+    */
+    
+    while((rowIndex != lastLine) or (columnIndex <= lastChar)){
+        storedIndex = 0;
+        columnIndex = 0;
+        cout << endl;
+        Sleep(1000);
         while (!isDone){
-            cout << "Checking for declarations!" << endl;
             if (fileContents[rowIndex][columnIndex] == '('){//Looks for the bracket indicating this is a function and not a variable
-                foundFunction = true;
+               foundFunction = true;
                isDone = true;//Means once this code is done, the loop won't run again
-               while (fileContents[rowIndex][storedIndex] != ';'){//Looks for the end of the declaration
+               while (fileContents[rowIndex][storedIndex] != '\n'){//Looks for the end of the declaration
+                   cout << fileContents[rowIndex][storedIndex];
                    functionDeclaration += (fileContents[rowIndex][storedIndex]);//Stores the declaration in an array
-                   cout << fileContents[rowIndex][storedIndex] << endl;
-                   cout << "Declaration?: " << functionDeclaration[storedIndex] << endl;
                    storedIndex++;
                }
+               if(fileContents[rowIndex][storedIndex - 1] == ':'){
+                   foundFunction = false;
+               }
             }
-            else if (stringMatch(fileContents, rowIndex, columnIndex, "main")){//Ignore the likely "int main" line 
-                isDone = true;
-                rowIndex++;
-                cout << "false positive main" << endl;
-            }
-            else if (fileContents[rowIndex][columnIndex] == '\n'){//Dealing with new lines in a function declaration
+            else if(fileContents[rowIndex][columnIndex] == '\n'){
                 rowIndex++;
                 columnIndex = 0;
             }
-            else if (fileContents[rowIndex][columnIndex] == ';') {//One possible end case if a variable is read into the function
-                isDone = true;
-                cout << "False positive variable" << endl;
-            }
             else {
-            functionDeclaration += (fileContents[rowIndex][storedIndex]);
-            cout << "Printing stuff!: " << functionDeclaration[storedIndex] << endl;
+            functionDeclaration += (fileContents[rowIndex][columnIndex]);
+            cout << fileContents[rowIndex][columnIndex];
             columnIndex++;
-            storedIndex++;
             }
         }
-        cout << "storedIndex value: " << storedIndex << endl;
+        
         functionDeclaration[storedIndex] = '\0';
-        cout << functionDeclaration[storedIndex-1] << endl;
         storedDeclaration = string(functionDeclaration);//Converts declaration to a string, in order to use stringMatch
         //Looking for the actual declaration next
         columnIndex = 0;//reset columnIndex
-        cout << "declaration: " << storedDeclaration << endl;
-        Sleep(1000);
         if (foundFunction){
-            for (int y = rowIndex + 1; y != lastLine; y++){
-                if (stringMatch(fileContents, y, 0, storedDeclaration)){
-                    cout << "found it!" << endl;
-                    fileOutput(storedDeclaration, outputPy, outputTxt);
-                    fileOutput(':', outputPy, outputTxt);
-                    while((fileContents[y][columnIndex] != '}') && (columnIndex < 1000)){
-                        if (fileContents[y][columnIndex] == '\n'){
-                            y++;
+            fileOutput(storedDeclaration, outputPy, outputTxt);
+            fileOutput(':', outputPy, outputTxt);
+            for(rowIndex = 0; rowIndex < lastLine; rowIndex++){
+                if ((stringMatch(fileContents, rowIndex, 0, storedDeclaration)) and (stringMatch(fileContents, storedDeclaration.length(), 0, ":"))){
+                    rowIndex++;
+                    while(fileContents[rowIndex][columnIndex] != '}'){
+                        fileOutput(fileContents[rowIndex][columnIndex], outputPy, outputTxt);
+                        if (fileContents[rowIndex][columnIndex] == '\n'){
+                            rowIndex++;
                             columnIndex = 0;
-                            cout << "hey0" << endl;
                         } else {
-                            fileOutput(fileContents[y][columnIndex], outputPy, outputTxt);
                             columnIndex++;
-                            cout << "heyo" << endl;
                         }
                     }
                 }
             }
         }
+        fileOutput(fileContents[rowIndex][columnIndex], outputPy, outputTxt);
+        while(fileContents[rowIndex][columnIndex] == '\n'){
+            rowIndex++;
+            columnIndex = 0;
+        }
+        rowIndex++;
     }
+    outputPy.close();
+    outputTxt.close();
+    input.close();
 }
 
 bool stringMatch(char fileContents[][1000], int rowIndex, int startPosition, string searchTerm){
@@ -195,6 +215,9 @@ int variableDeclaration(char fileContents[][1000], int rowIndex, int columnIndex
     }
     else if(stringMatch(fileContents, rowIndex, columnIndex, "double ")){
         return 7;
+    }
+    else if(stringMatch(fileContents, rowIndex, columnIndex, "void ")){
+        return 5;
     }
     else{
         return 0;
