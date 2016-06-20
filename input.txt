@@ -6,14 +6,13 @@ int newNumber = 5;
 char newChar = 'H';
 string newString = "string";
 double newDouble = 10.5;
-if(!newBool){
-    newChar = 'B';
-    while(newNumber < 8){
-        newNumber = newNumber + 1;
-    }
-	while(newNumber < 10){
-newNumber = newNumber + 1;
+switch(NewChar){
+	case 'H':
+		newChar = 'B';
+	case 'B':
+		newChar = 'C';
+	case 'C':
+		newChar = 'Q';
+	default:
+		newChar = 'H';
 }
-newDouble = 8.9;
-}
-newString = "BobLovesCheese";

@@ -12,7 +12,7 @@ bool stringMatch(char fileContents[][1000], int rowIndex, int startPosition, str
 int variableDeclaration(char fileContents[][1000], int rowIndex, int columnIndex);
 void consoleOutput(char fileContents[][1000], int& rowIndex, int& columnIndex, ofstream &outputPy, ofstream &outputTxt, int& tabs);
 void ifStatement(char fileContents[][1000], int& rowIndex, int& columnIndex, ofstream &outputPy, ofstream &outputTxt, int& tabs);
-void caseStatement(char fileContents[][1000], int &rowIndex, int &columnIndex, ofstream &outputPy, ofstream &outputTxt, int switchVariableRow, int switchVariableColumn, int& tabs);
+void caseStatement(char fileContents[][1000], int &rowIndex, int &columnIndex, ofstream &outputPy, ofstream &outputTxt, int switchVariableRow, int switchVariableColumn, int& tabs, bool& firstCase);
 void tabPrinter(char fileContents[][1000], int& rowIndex, int &columnIndex, int& tabs, ofstream &outputPy, ofstream &outputTxt);
 template <typename genericOutput> void fileOutput(genericOutput output, ofstream &outputPy, ofstream &outputTxt){
     outputPy << output;
@@ -43,6 +43,8 @@ int main(int argc, char** argv){
     //the row an column for the location of the variable being used in a switch
     int switchVariableColumn = 0;
     int switchVariableRow = 0;
+    //used to know whether to output if or elif
+    bool firstCase = true;
     //if true the current character prints
     bool doPrint = true;
     //inputs the input file into the array
@@ -87,12 +89,13 @@ int main(int argc, char** argv){
         }
         else if(stringMatch(fileContents, rowIndex, columnIndex, "case ")){
             columnIndex = columnIndex + 5;
-            caseStatement(fileContents, rowIndex, columnIndex, outputPy, outputTxt, switchVariableRow, switchVariableColumn, tabs);
+            caseStatement(fileContents, rowIndex, columnIndex, outputPy, outputTxt, switchVariableRow, switchVariableColumn, tabs, firstCase);
         }
         else if(stringMatch(fileContents, rowIndex, columnIndex, "default:")){
             columnIndex = 0;
             tabPrinter(fileContents, rowIndex, columnIndex, tabs, outputPy, outputTxt);
             fileOutput("else:\n", outputPy, outputTxt);
+            firstCase = true;
         }
         //processes while loops
         else if(stringMatch(fileContents, rowIndex, columnIndex, "while(")){
@@ -249,10 +252,16 @@ void ifStatement(char fileContents[][1000], int& rowIndex, int& columnIndex, ofs
     }
 }
 
-void caseStatement(char fileContents[][1000], int &rowIndex, int &columnIndex, ofstream &outputPy, ofstream &outputTxt, int switchVariableRow, int switchVariableColumn, int& tabs){
+void caseStatement(char fileContents[][1000], int &rowIndex, int &columnIndex, ofstream &outputPy, ofstream &outputTxt, int switchVariableRow, int switchVariableColumn, int& tabs, bool& firstCase){
     //python does not have switches so it changes it to if/elif statements
     int i = 0;
-    fileOutput("if ", outputPy, outputTxt); 
+    if(firstCase){
+        fileOutput("if ", outputPy, outputTxt);
+        firstCase = false;
+    }
+    else{
+        fileOutput("elif ", outputPy, outputTxt); 
+    }
     while(fileContents[switchVariableRow][switchVariableColumn+i] != ')'){ //prints the variable being used for the switch 
         fileOutput(fileContents[switchVariableRow][switchVariableColumn+i], outputPy, outputTxt);
         i++;
@@ -262,6 +271,7 @@ void caseStatement(char fileContents[][1000], int &rowIndex, int &columnIndex, o
         fileOutput(fileContents[rowIndex][columnIndex], outputPy, outputTxt);
         columnIndex++;
     }
+    fileOutput(":", outputPy, outputTxt); 
     columnIndex++;
     return;
 }
